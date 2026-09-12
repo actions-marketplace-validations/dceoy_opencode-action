@@ -4,9 +4,13 @@
 
 The examples below pin the reusable workflow definition to a full commit SHA. Inside the called workflow, `uses: $/.` references the action at the repository root from the same repository and running commit, so the workflow reference also pins the action implementation without a second checkout or a separate action revision input.
 
-## Mention bot
+## Manual dispatch
 
-Use `opencode-bot.yml` for `/opencode` and `/oc` comments, or for another event with a fixed `prompt`.
+`opencode-bot.yml` exposes `workflow_dispatch` with the same inputs as `workflow_call`. `model` is required, and `prompt` must be non-empty for the job to run. It can be dispatched from the Actions UI or by API clients and integrations authorized to dispatch GitHub Actions workflows.
+
+## OpenCode bot
+
+Use `opencode-bot.yml` for `/opencode` and `/oc` comments, direct manual dispatch, or another event with a fixed `prompt`.
 
 <!-- prettier-ignore -->
 ```yaml
@@ -26,14 +30,14 @@ jobs:
       pull-requests: write
       id-token: write
       actions: read
-    uses: dceoy/opencode-action/.github/workflows/opencode-bot.yml@e9f543aabedff8b75c24daeb46c8089ccf86d68f  # v0.7.1
+    uses: dceoy/opencode-action/.github/workflows/opencode-bot.yml@0ff64486494c3134c46df6ce0e51eda4a64e349f  # v0.7.3
     with:
       model: opencode-go/kimi-k3
     secrets:
       OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
 ```
 
-For comment events, the reusable workflow accepts comments only from `OWNER`, `MEMBER`, or `COLLABORATOR` author associations. On other events, set a non-empty `prompt` to run the workflow without a comment trigger.
+For comment events, the reusable workflow accepts comments only from `OWNER`, `MEMBER`, or `COLLABORATOR` author associations. On non-comment events, a non-empty `prompt` is required.
 
 ## Pull request review
 
@@ -55,7 +59,7 @@ jobs:
       pull-requests: write
       id-token: write
       actions: read
-    uses: dceoy/opencode-action/.github/workflows/opencode-review.yml@e9f543aabedff8b75c24daeb46c8089ccf86d68f  # v0.7.1
+    uses: dceoy/opencode-action/.github/workflows/opencode-review.yml@0ff64486494c3134c46df6ce0e51eda4a64e349f  # v0.7.3
     with:
       model: openrouter/openrouter/free
     secrets:
@@ -84,6 +88,8 @@ Both reusable workflows expose the action configuration plus a runner input:
 | `use-bundled-toolkit` | `true`                                                              | Use the bundled OpenCode toolkit.                             |
 | `timeout-minutes`     | `60`                                                                | Maximum OpenCode runtime in minutes.                          |
 | `runs-on`             | `ubuntu-latest`                                                     | Runner label for the called job.                              |
+
+Direct `workflow_dispatch` on `opencode-bot.yml` uses the same inputs.
 
 GitHub.com's `$/path` self repository syntax resolves to the repository and commit of the workflow where it appears, including when that workflow is called from another repository. These workflows use `$/.` because the action is defined at the repository root. GitHub Enterprise Server does not support this syntax.
 
